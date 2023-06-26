@@ -8,7 +8,7 @@
 	call print_title
 	call arg_handler
 	call print_parameters
-	call read_source
+	call parser
 
     _exit:
 	mov sys_exit, %rax
