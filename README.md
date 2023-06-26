@@ -3,9 +3,8 @@
 **STAGE-1** is the first version of the compiler written in Assembler x86_64 (AT&T syntax), necessary for the first stage of the compiler bootstrap.
 
 <br>
-<br>
 
-## Build
+### Build
 
 ```shell
 
@@ -20,9 +19,8 @@ cd rune-list-core
 ```
 
 <br>
-<br>
 
-## Usage
+### Usage
 
 ```shell
 
