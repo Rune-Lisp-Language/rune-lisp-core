@@ -22,137 +22,83 @@ echo "                                     "
 
 SRC_DIR="src"
 BUILD_DIR="build"
+
 OBJ_DIR=${BUILD_DIR}/obj
 BIN_DIR=${BUILD_DIR}/bin
 
 NAME_EXE="runec-core"
 
 
-SUBDIR_ENTRY="entry"
-SUBDIR_SHARE="share"
-SUBDIR_LANG_CORE="lang-core"
-
-
-MODULES_ENTRY=(
-    "main"
-    "args"
-    "errors"
-)
-
-MODULES_SHARE=(
-    "syscalls"
-    "len"
-    "print"
-    "read"
-    "write"
-)
-
-MODULES_LANG_CORE=(
-    "atoms"
-    "symbols"
-)
-
-
-LINK_NAMES=()
-
-
 
 function build {
-    local subdir=$1
-    local modules=$2[@]
+    echo " [ ** ]: Assembly sources"
+    echo
 
-    for name in ${!modules}
+    for subdir in ${SRC_DIR}/*
     do
-	local source=${SRC_DIR}/${subdir}/${name}.asm
-	local output=${OBJ_DIR}/${subdir}/${name}.o
+	for source in ${subdir}/*
+	do
+	    if [ -f $source ]
+	    then
+	        local output=${source//${SRC_DIR}/${OBJ_DIR}}
+		local output=${output//".asm"/".o"}
 
-	as --64 -march=corei7 -mtune=corei7 -warn -o $output $source
+		mkdir -p ${subdir//${SRC_DIR}/${OBJ_DIR}}
 
-        if [ $? -eq 0 ]
-	then
-	    echo "    ->" ${source} assembled
-	    LINK_NAMES+=($output)
-	else
-	    echo "    ||" ${source} not assembled
-	fi
+		as --64 -march=corei7 -mtune=corei7 -warn -o $output $source
 
+		echo "    ->  source:  $source assembled"
+		echo "        output:  $output"
+		echo
+	    fi
+	done
     done
 
-    echo " "
+    echo " [ OK ]: Assembly complete"
+    echo
+    echo
 }
 
 
 function link {
-    local objects=$1[@]
+    echo " [ ** ]: Static link objects"
+    echo
+
+    local objects=()
+    local path_exe=${BIN_DIR}/${NAME_EXE}
+
+    mkdir -p $BIN_DIR
+
+    for subdir in ${OBJ_DIR}/*
+    do
+	for obj in ${subdir}/*
+	do
+	    if [ -f $obj ]
+	    then
+		objects+=($obj)
+		echo "     -> add $obj"
+	    fi
+	done
+    done
 
     ld \
 	-b elf64-x86-64 \
 	--dynamic-linker /lib64/ld-linux.so.2 \
 	-nostdlib \
 	-e _start \
-	-s ${!objects} \
-	-o ${BIN_DIR}/${NAME_EXE}
+	-s ${objects[@]} \
+	-o $path_exe
 
-    if [ $? -eq 0 ]
-    then
-	for name in ${!objects}
-	do
-	    echo "    ->" $name linked
-	done
-	echo " "
-    fi
-}
-
-
-function make {
-    echo " [ ** ]: Assembly"
-    echo " "
-
-    build $SUBDIR_ENTRY MODULES_ENTRY
-
-    if [ $? -eq 0 ]
-    then
-	build $SUBDIR_SHARE MODULES_SHARE
-
-	if [ $? -eq 0 ]
-	then
-	    build $SUBDIR_LANG_CORE MODULES_LANG_CORE
-
-	    if [ $? -eq 0 ]
-	    then
-		echo " [ OK ]: Assembly complete"
-		echo " "
-	    else
-		echo " [ ER ]: Assembly" ${SUBDIR_LANG_CORE}
-	    fi
-
-        else
-	    echo " [ ER ]: Assembly" ${SUBDIR_SHARE}
-	fi
-
-    else
-	echo " [ ER ]: Assembly" ${SUBDIR_ENTRY}
-    fi
-
-
-    echo " "
-    echo " [ ** ]: Static link"
-    echo " "
-
-    link LINK_NAMES
-
-    if [ $? -eq 0 ]
-    then
-	echo " [ OK ]: Link complete"
-    else
-	echo " [ ER ]: Link error"
-    fi
-
-    echo " "
-    echo "    ->" ${BIN_DIR}/${NAME_EXE} "executable"
-    echo " "
+    echo
+    echo " [ OK ]: Link complete"
+    echo
+    echo " ─────────────────────────────────── "
+    echo
+    echo " Executable: $path_exe"
+    echo
 }
 
 
 
-make
+build
+link
