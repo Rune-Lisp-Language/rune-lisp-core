@@ -13,7 +13,7 @@ cd Rune-Lisp-Language
 
 git clone https://github.com/Rune-Lisp-Language/rune-lisp-core.git
 
-cd rune-list-core
+cd rune-lisp-core
 ./make-core.sh
 
 ```
