@@ -1,6 +1,9 @@
 # Rune Lisp (language core)
 
-<img src="img/rune-lisp.png" alt="Rune Lisp" align="middle" width="40%">
+<div align="center">
+  <img src="img/rune-lisp.png" alt="Rune Lisp" width="40%">
+</div>
+
 
 **STAGE-1** is the first version of the compiler written in Assembler x86_64 (AT&T syntax), necessary for the first stage of the compiler bootstrap.
 
